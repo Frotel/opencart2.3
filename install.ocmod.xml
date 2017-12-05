@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+	<name>فروتل - ثبت سفارشات</name>
+	<code>frotel_register_order</code>
+	<version>1.0</version>
+	<author>ReZa ZaRe (Rz.ZaRe@Gmail.com)</author>
+	<link>https://github.com/Reza1607</link>
+	<file path="catalog/controller/checkout/checkout.php">
+		<operation>
+			<search><![CDATA[$products = $this->cart->getProducts();]]></search>
+			<add position="before"><![CDATA[
+                if (!isset($this->session->data['province_id'])) {
+                    $this->response->redirect($this->url->link('extension/payment/frotel/city'));
+                }
+            ]]></add>
+		</operation>
+	</file>
+	<file error="skip" path="catalog/controller/quickcheckout/checkout.php">
+		<operation>
+			<search><![CDATA[$products = $this->cart->getProducts();]]></search>
+			<add position="before"><![CDATA[
+                if (!isset($this->session->data['province_id'])) {
+                    $this->response->redirect($this->url->link('extension/payment/frotel/city'));
+                }
+            ]]></add>
+		</operation>
+	</file>
+	<file path="catalog/model/checkout/order.php">
+		<operation>
+			<search><![CDATA[$order_query = $this->db->query("SELECT *, (SELECT os.name FROM `" . DB_PREFIX . "order_status` os WHERE os.order_status_id = o.order_status_id AND os.language_id = o.language_id) AS order_status FROM `" . DB_PREFIX . "order` o WHERE o.order_id = '" . (int)$order_id . "'");]]></search>
+			<add position="replace"><![CDATA[$order_query = $this->db->query("SELECT *, (SELECT os.name FROM `" . DB_PREFIX . "order_status` os WHERE os.order_status_id = o.order_status_id AND os.language_id = o.language_id) AS order_status,f.frotel_factor,f.last_change_status,f.province,f.city FROM `" . DB_PREFIX . "order` o LEFT JOIN `".DB_PREFIX."frotel_factor` AS f ON o.order_id=f.oc_order_id WHERE o.order_id = '" . (int)$order_id . "'");]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['invoice_no'              => $order_query->row['invoice_no'],]]></search>
+			<add position="before"><![CDATA[
+			'frotel_factor'                  => $order_query->row['frotel_factor'],
+            'last_change_status'			 => $order_query->row['last_change_status'],
+            'province'			             => $order_query->row['province'],
+            'city'			                 => $order_query->row['city'],
+						]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/checkout/success.php">
+		<operation>
+			<search><![CDATA[$data['heading_title'] = $this->language->get('heading_title');]]></search>
+			<add position="before"><![CDATA[
+			$message = '';
+			if(isset($this->session->data['pay_verify'])) {
+                $message .= '<div class="alert alert-success">'.$this->session->data['pay_verify'].'</div><br />';
+				$this->session->data['pay_verify'] = null;
+            }
+            if(isset($this->session->data['pay_error'])) {
+                $message .= '<div class="alert alert-danger">'.$this->session->data['pay_error'].'</div><br />';
+				$this->session->data['pay_error'] = null;
+            }
+						]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['button_continue'] = $this->language->get('button_continue');]]></search>
+			<add position="before"><![CDATA[
+			$data['text_message'] = $message . $data['text_message'];
+						]]></add>
+		</operation>
+	</file>
+</modification>

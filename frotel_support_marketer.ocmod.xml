@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+	<name>فروتل - پشتیبانی از بازاریاب های فروتل</name>
+	<code>frotel_support_marketer</code>
+	<version>1.0</version>
+	<author>ReZa ZaRe (Rz.ZaRe@Gmail.com)</author>
+	<link>https://github.com/Reza1607</link>
+	<file path="system/library/session.php">
+		<operation>
+			<search><![CDATA[$this->data =& $_SESSION[$key];]]></search>
+			<add position="after"><![CDATA[
+                if (isset($_GET['bz']) && intval($_GET['bz'])>0) {
+                	$_SESSION[$key]['frotel_bz'] = intval($_GET['bz']);
+                } elseif (isset($_GET['wid']) && intval($_GET['wid'])>0) {
+					$_SESSION[$key]['frotel_bz'] = intval($_GET['wid']);
+				} elseif (isset($_GET['moaref']) && intval($_GET['moaref'])>0) {
+					$_SESSION[$key]['frotel_bz'] = intval($_GET['moaref']);
+				}
+            ]]></add>
+		</operation>
+	</file>
+</modification>
